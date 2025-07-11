@@ -1,13 +1,23 @@
 
+import { db } from '../db';
+import { clientsTable } from '../db/schema';
 import { type Client } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const getClient = async (id: number): Promise<Client | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a specific client by ID from the database.
-    return Promise.resolve({
-        id: id,
-        name: 'Placeholder Client',
-        email: 'placeholder@example.com',
-        created_at: new Date()
-    } as Client);
-}
+  try {
+    const results = await db.select()
+      .from(clientsTable)
+      .where(eq(clientsTable.id, id))
+      .execute();
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    return results[0];
+  } catch (error) {
+    console.error('Get client failed:', error);
+    throw error;
+  }
+};

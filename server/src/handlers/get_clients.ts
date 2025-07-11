@@ -1,8 +1,17 @@
 
+import { db } from '../db';
+import { clientsTable } from '../db/schema';
 import { type Client } from '../schema';
 
 export const getClients = async (): Promise<Client[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all clients from the database.
-    return [];
-}
+  try {
+    const results = await db.select()
+      .from(clientsTable)
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Get clients failed:', error);
+    throw error;
+  }
+};

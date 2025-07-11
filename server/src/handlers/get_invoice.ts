@@ -1,19 +1,32 @@
 
+import { db } from '../db';
+import { invoicesTable } from '../db/schema';
 import { type Invoice } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const getInvoice = async (id: number): Promise<Invoice | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a specific invoice by ID from the database.
-    return Promise.resolve({
-        id: id,
-        invoice_number: 'INV-001',
-        client_id: 1,
-        amount: 100.00,
-        due_date: new Date(),
-        status: 'Pending',
-        items: [],
-        taxes: 0,
-        notes: null,
-        created_at: new Date()
-    } as Invoice);
-}
+  try {
+    const results = await db.select()
+      .from(invoicesTable)
+      .where(eq(invoicesTable.id, id))
+      .execute();
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    const invoice = results[0];
+    
+    // Convert numeric fields back to numbers and parse JSON items
+    return {
+      ...invoice,
+      amount: parseFloat(invoice.amount),
+      taxes: parseFloat(invoice.taxes),
+      items: invoice.items as any, // JSON field is already parsed by Drizzle
+      notes: invoice.notes // Already nullable
+    };
+  } catch (error) {
+    console.error('Invoice retrieval failed:', error);
+    throw error;
+  }
+};
